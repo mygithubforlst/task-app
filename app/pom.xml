@@ -66,6 +66,14 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- 测试用内存库：仅 test 域，不进入交付 fat jar，用来让测试上下文脱离 MySQL 启动 -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.200</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- db -->
 		<!-- 常见版本数据库JDBC驱动，也可以替换为项目使用的JDBC驱动 -->
 		<dependency>

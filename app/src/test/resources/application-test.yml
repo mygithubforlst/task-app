@@ -1,0 +1,24 @@
+server:
+  # 测试上下文不使用 /task-app 前缀，便于 MockMvc 直接以 /auth、/tasks 等路径访问
+  servlet:
+    context-path: /
+
+spring:
+  # 用 H2 内存库替代 MySQL，使测试上下文可脱离本地数据库启动（不执行真实 SQL，Mapper 全部 Mock）
+  datasource:
+    url: jdbc:h2:mem:taskapp_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: false
+
+nrec:
+  task:
+    jwt:
+      # 与 main application-test.yml 一致的开发密钥（非生产密钥）
+      secret: dev-only-jwt-secret-key-for-task-app-nrec-0123456789abcdefghijklmnop
+      expiration: 86400000
+  exception:
+    code-prefix: 99
