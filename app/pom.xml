@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+        <groupId>com.nrec.service</groupId>
+        <artifactId>nrec-service-cli</artifactId>
+        <version>3.2-SNAPSHOT</version>
+    </parent>
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- 此处为服务ID,也是注册到注册中心的名称,需修改为当前服务名 -->
+	<artifactId>app</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+
+		<!-- https://mvnrepository.com/artifact/p6spy/p6spy -->
+		<!-- 生产环境可去除该依赖，仅在测试环境使用 -->
+		<dependency>
+			<groupId>p6spy</groupId>
+			<artifactId>p6spy</artifactId>
+			<version>3.9.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-to-slf4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.nrec.base</groupId>
+			<artifactId>nrec-service-registry-spring-boot-starter</artifactId>
+			<version>${com.nrec.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.alibaba.nacos</groupId>
+					<artifactId>nacos-client</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+    	<!-- 有时候需要强制指定nacos-client版本，否则会有依赖版本冲突问题 -->
+		<dependency>
+			<groupId>com.alibaba.nacos</groupId>
+			<artifactId>nacos-client</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+
+		<!--切面模块-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
+		<!-- 单元测试-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- db -->
+		<!-- 常见版本数据库JDBC驱动，也可以替换为项目使用的JDBC驱动 -->
+		<dependency>
+			<groupId>com.nrec.base</groupId>
+			<artifactId>jdbc-common</artifactId>
+			<version>${com.nrec.common.version}</version>
+		</dependency>
+
+		<!--spring boot mybatis模块-->
+		<dependency>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-boot-starter</artifactId>
+			<version>3.5.3.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.nrec.base</groupId>
+			<artifactId>common</artifactId>
+			<version>${com.nrec.common.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.nrec.base</groupId>
+			<artifactId>param-valid-spring-boot-starter</artifactId>
+			<version>${com.nrec.param.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.nrec.base</groupId>
+			<artifactId>mvc-config-spring-boot-starter</artifactId>
+			<version>${com.nrec.mvc.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.nrec.base</groupId>
+			<artifactId>cors-config-spring-boot-starter</artifactId>
+			<version>${com.nrec.cors.version}</version>
+		</dependency>
+
+		<!--	配置中心插件	-->
+		<dependency>
+			<groupId>com.nrec.base</groupId>
+			<artifactId>config-controller-spring-boot-starter</artifactId>
+			<version>${com.nrec.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.nrec.base</groupId>
+			<artifactId>config-client-smc-starter</artifactId>
+			<version>${com.nrec.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.nrec.base</groupId>
+			<artifactId>config-client-nacos-starter</artifactId>
+			<version>${com.nrec.config.version}</version>
+		</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-security</artifactId>
+	</dependency>
+
+	<!--
+	  显式声明 Spring 核心依赖为 compile 作用域。
+	  原因：nrcloud-fat 父 POM 用 maven-shade-plugin 把 org.springframework.* 直接 shade 进 jar，
+	        nrec 各基础 starter（registry/mvc-config 等）在传递依赖中 exclude 了 spring-core/spring-boot，
+	        导致 spring-boot:run 组装运行时 classpath 时缺失 spring-core（NoClassDefFoundError: org.springframework.util.Assert）。
+	  直接依赖不受传递 exclude 影响，可强制这些 jar 进入运行时 classpath；版本由 spring-boot-starter-parent(Boot 2.3.12) 统一管理，不会冲突。
+	-->
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-core</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-context</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-beans</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-web</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-webmvc</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-autoconfigure</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.security</groupId>
+		<artifactId>spring-security-web</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.security</groupId>
+		<artifactId>spring-security-config</artifactId>
+	</dependency>
+
+	<!-- JWT (jjwt 0.11.5 规范版) -->
+	<dependency>
+		<groupId>io.jsonwebtoken</groupId>
+		<artifactId>jjwt-api</artifactId>
+		<version>0.11.5</version>
+	</dependency>
+	<dependency>
+		<groupId>io.jsonwebtoken</groupId>
+		<artifactId>jjwt-impl</artifactId>
+		<version>0.11.5</version>
+		<scope>runtime</scope>
+	</dependency>
+	<dependency>
+		<groupId>io.jsonwebtoken</groupId>
+		<artifactId>jjwt-jackson</artifactId>
+		<version>0.11.5</version>
+		<scope>runtime</scope>
+	</dependency>
+
+	<!-- Swagger UI（父 POM 只传了 springfox-swagger2，未传 UI 静态资源） -->
+	<dependency>
+		<groupId>io.springfox</groupId>
+		<artifactId>springfox-swagger-ui</artifactId>
+		<version>2.9.2</version>
+	</dependency>
+</dependencies>
+
+	<profiles>
+		<!-- 开发/测试环境，默认激活 -->
+		<profile>
+			<id>test</id>
+			<properties>
+				<application.exclude>-pro</application.exclude>
+				<bootstrap.exclude>pro</bootstrap.exclude>
+				<profile.env>test</profile.env>
+			</properties>
+		</profile>
+
+		<!-- 生产环境 -->
+		<profile>
+			<id>pro</id>
+			<properties>
+				<application.exclude>**</application.exclude>
+				<bootstrap.exclude>test</bootstrap.exclude>
+				<profile.env>pro</profile.env>
+			</properties>
+			<activation>
+				<!--默认启用的是pro环境配置 -->
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+	</profiles>
+
+	<build>
+		<!-- 指定package生成的文件名 -->
+		<finalName>${project.artifactId}</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>application${application.exclude}.yml</exclude>
+					<exclude>bootstrap-${bootstrap.exclude}.yml</exclude>
+				</excludes>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.nrec.service.AppApplication</mainClass>
+					<!--fork :  如果没有该项配置，则devtools不会起作用，即应用不会restart -->
+					<fork>true</fork>
+					<addResources>true</addResources><!--支持静态文件热部署-->
+					<!--
+					  覆盖 nrcloud-fat 父 POM 传下来的 excludeGroupIds（原值=org.springframework,org.springframework.security）。
+					  父 POM 用 shade 把 spring 打进 fat jar 所以打包时排除；
+					  但 spring-boot:run 走普通 classpath，排除后会导致 NoClassDefFoundError: org.springframework.util.Assert。
+					  置空 = 不排除任何 groupId，让所有依赖（含 spring-core 等）正常进入运行时 classpath。
+					-->
+					<excludeGroupIds></excludeGroupIds>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<properties>
+		<skipTests>true</skipTests>
+	</properties>
+</project>

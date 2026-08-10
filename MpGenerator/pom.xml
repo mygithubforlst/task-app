@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>com.nrec.service</groupId>
+        <artifactId>nrec-service-cli</artifactId>
+        <version>3.2-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>MpGenerator</artifactId>
+
+    <dependencies>
+        <!-- 模板引擎 -->
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity-engine-core</artifactId>
+            <version>2.0</version>
+        </dependency>
+
+        <!-- 模板引擎 -->
+        <dependency>
+            <groupId>com.ibeetl</groupId>
+            <artifactId>beetl</artifactId>
+            <version>3.1.8.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nrec.base</groupId>
+            <artifactId>mybatis-plus-generator-ui</artifactId>
+            <version>3.2-SNAPSHOT</version>
+        </dependency>
+
+        <!-- db -->
+        <dependency>
+            <groupId>com.nrec.base</groupId>
+            <artifactId>jdbc-common</artifactId>
+            <version>${com.nrec.common.version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <!-- 显式指定启动类，避免 repackage 扫描到 spring-security-core 的
+         ComparableVersion.main() 造成 "Unable to find a single main class" -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>MpGeneratorUiServer</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
