@@ -12,13 +12,17 @@ import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.ApiKey;
+import springfox.documentation.service.AuthorizationScope;
 import springfox.documentation.service.Contact;
+import springfox.documentation.service.SecurityReference;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -52,7 +56,31 @@ public class Swagger2Config {
                 .select()
                 .apis(Predicates.or(predicateList))
                 .paths(PathSelectors.any())
+                .build()
+                .securitySchemes(Arrays.asList(apiKey()))
+                .securityContexts(Arrays.asList(securityContext()));
+    }
+
+    /**
+     * Swagger UI 的全局认证方案：以 Authorization 请求头传递 Bearer Token。
+     * 仅影响 UI 的「Authorize」按钮与默认鉴权展示，不改变后端 SecurityConfig 的真实拦截逻辑。
+     */
+    private ApiKey apiKey() {
+        return new ApiKey("JWT", "Authorization", "header");
+    }
+
+    private springfox.documentation.spi.service.contexts.SecurityContext securityContext() {
+        return springfox.documentation.spi.service.contexts.SecurityContext.builder()
+                .securityReferences(defaultAuth())
+                .forPaths(PathSelectors.any())
                 .build();
+    }
+
+    private List<SecurityReference> defaultAuth() {
+        AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
+        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
+        authorizationScopes[0] = authorizationScope;
+        return Arrays.asList(new SecurityReference("JWT", authorizationScopes));
     }
 
     private ApiInfo apiInfo() {
