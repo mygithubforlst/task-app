@@ -182,21 +182,3 @@ java -jar target/app.jar
 4. 依次测试 tasks / categories 增删改查；
 5. 用用户 A 的 Token 尝试访问/修改用户 B 的数据，应返回「数据不存在」/401。
 
----
-
-## 七、交付物清单（对应作业 §12）
-
-- [x] `sql/schema-mysql.sql` — 建库 + 三表 + 约束 + 索引
-- [x] `sql/data-mysql.sql` — 测试数据（BCrypt 哈希，无明文）
-- [x] `README.md` — 分层 / 表关系 / JWT 流程 / 运行说明
-- [x] 13 个接口（Swagger 可验证）
-- [x] 安全：BCrypt 密码、JWT 鉴权、跨用户隔离、无明文凭据入库
-
----
-
-## 八、环境红线提示（避免扣分）
-
-- 仅改动 `app` 模块，未另起项目，包名恒为 `com.nrec.service.app`。
-- 使用 `javax.servlet`（非 jakarta），无 Java 9+ 语法，可 JDK8 编译。
-- 复用脚手架 `Result` / `ServiceException`，未新建自定义返回/异常体系。
-- 数据库密码、JWT 密钥等均走占位符/`yml` 配置，**仓库内无任何真实凭据**。
