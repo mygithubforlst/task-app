@@ -152,10 +152,23 @@ spring:
 > 本仓库 `password` 一律为 `${TASK_DB_PASSWORD}` 占位符，不含任何真实密码。
 
 ### 3. 启动
+
+> ⚠️ 本项目父 POM（nrcloud-fat）在 `spring-boot-maven-plugin` 根级配了
+> `excludeGroupIds=org.springframework,org.springframework.security`，
+> 对 `spring-boot:run` 目标也生效，会导致运行时 `NoClassDefFoundError`。
+> **因此 `spring-boot:run` 不可用**，必须用 fat jar 方式启动。
+
+**方式一：命令行（推荐）**
 ```bash
-mvn -Ptest -pl app -am spring-boot:run
-# 或 IDEA：勾选 test profile → 运行 AppApplication
+cd app
+mvn -Ptest package -DskipTests
+set TASK_DB_PASSWORD=Root@9700        # 本地数据库 root 密码，仅环境变量注入
+java -jar target/app.jar
 ```
+
+**方式二：IDEA**
+- 运行 `AppApplication`
+- VM options：`-Dspring.profiles.active=test -DTASK_DB_PASSWORD=Root@9700`
 
 ### 4. 接口文档 / 联调
 启动后访问：
