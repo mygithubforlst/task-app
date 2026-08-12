@@ -13,7 +13,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import com.nrec.service.app.security.JwtProperties;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.test.web.servlet.MockMvc;
+
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 
 /**
  * 测试基座（Web / 安全层）。
@@ -37,6 +44,9 @@ public abstract class BaseWebTest {
     @Autowired
     protected JwtUtil jwtUtil;
 
+    @Autowired
+    protected JwtProperties jwtProperties;
+
     @MockBean
     protected IAuthService authService;
     @MockBean
@@ -55,5 +65,31 @@ public abstract class BaseWebTest {
     /** 生成带指定用户身份的有效 Bearer Token（含 "Bearer " 前缀），供受保护接口鉴权使用。 */
     protected String bearer(String userId, String username) {
         return "Bearer " + jwtUtil.generateToken(userId, username);
+    }
+
+    /** 生成已过期（exp 落在过去）的 Bearer Token，用于校验「过期即拒」场景。 */
+    protected String expiredBearer(String userId, String username) {
+        SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+        long now = System.currentTimeMillis();
+        String token = Jwts.builder()
+                .setSubject(userId)
+                .claim("username", username)
+                .setIssuedAt(new Date(now - 20_000L))
+                .setExpiration(new Date(now - 10_000L))
+                .signWith(key)
+                .compact();
+        return "Bearer " + token;
+    }
+
+    /** 生成被篡改（payload 中段被改动）的 Bearer Token，用于校验「篡改即拒」场景。 */
+    protected String tamperedBearer(String userId, String username) {
+        String valid = jwtUtil.generateToken(userId, username);
+        String[] parts = valid.split("\\.");
+        String payload = parts[1];
+        int len = payload.length();
+        char last = payload.charAt(len - 1);
+        char flipped = (last == 'A') ? 'B' : 'A';
+        parts[1] = payload.substring(0, len - 1) + flipped;
+        return "Bearer " + String.join(".", parts);
     }
 }

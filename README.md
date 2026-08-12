@@ -162,13 +162,13 @@ spring:
 ```bash
 cd app
 mvn -Ptest package -DskipTests
-set TASK_DB_PASSWORD=Root@9700        # 本地数据库 root 密码，仅环境变量注入
+set TASK_DB_PASSWORD=&lt;你的本地MySQL密码&gt;        # 本地数据库 root 密码，仅环境变量注入
 java -jar target/app.jar
 ```
 
 **方式二：IDEA**
 - 运行 `AppApplication`
-- VM options：`-Dspring.profiles.active=test -DTASK_DB_PASSWORD=Root@9700`
+- VM options：`-Dspring.profiles.active=test -DTASK_DB_PASSWORD=&lt;你的本地MySQL密码&gt;`
 
 ### 4. 接口文档 / 联调
 启动后访问：

@@ -170,6 +170,28 @@ public class TaskControllerTest extends BaseWebTest {
                 .andExpect(jsonPath("$.code").value("401"));
     }
 
+    @Test
+    void page_expiredToken_401() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/tasks/page")
+                .header("Authorization", expiredBearer("u1", "alice"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.succ").value(false))
+                .andExpect(jsonPath("$.code").value("401"));
+    }
+
+    @Test
+    void page_tamperedToken_401() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/tasks/page")
+                .header("Authorization", tamperedBearer("u1", "alice"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.succ").value(false))
+                .andExpect(jsonPath("$.code").value("401"));
+    }
+
     private static String repeat(String s, int n) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < n; i++) {
