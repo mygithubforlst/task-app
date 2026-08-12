@@ -36,6 +36,9 @@ public class TaskDto {
     @ApiModelProperty(value = "所属分类名称")
     private String categoryName;
 
+    @ApiModelProperty(value = "乐观锁版本号（更新时原样回传）")
+    private Long version;
+
     @ApiModelProperty(value = "创建时间")
     private LocalDateTime createdAt;
 

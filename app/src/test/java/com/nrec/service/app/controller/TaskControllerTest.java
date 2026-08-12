@@ -5,6 +5,7 @@ import com.nrec.base.common.model.TablePage;
 import com.nrec.service.app.BaseWebTest;
 import com.nrec.service.app.common.BizCode;
 import com.nrec.service.app.model.dto.TaskDto;
+import com.nrec.service.app.model.dto.TaskStatisticsDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -135,6 +136,35 @@ public class TaskControllerTest extends BaseWebTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/tasks/page")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.succ").value(false))
+                .andExpect(jsonPath("$.code").value("401"));
+    }
+
+    @Test
+    void overdue_success() throws Exception {
+        when(taskService.listOverdue())
+                .thenReturn(Collections.singletonList(new TaskDto().setId("t1").setTitle("逾期任务")));
+        mockMvc.perform(MockMvcRequestBuilders.get("/tasks/overdue")
+                .header("Authorization", bearer("u1", "alice")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").exists());
+    }
+
+    @Test
+    void statistics_success() throws Exception {
+        when(taskService.statistics()).thenReturn(
+                new TaskStatisticsDto().setTotal(5).setPending(2).setInProgress(1).setCompleted(1).setOverdue(1));
+        mockMvc.perform(MockMvcRequestBuilders.get("/tasks/statistics")
+                .header("Authorization", bearer("u1", "alice")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.total").value(5))
+                .andExpect(jsonPath("$.data.overdue").value(1));
+    }
+
+    @Test
+    void overdue_withoutToken_401() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/tasks/overdue"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.succ").value(false))
                 .andExpect(jsonPath("$.code").value("401"));
