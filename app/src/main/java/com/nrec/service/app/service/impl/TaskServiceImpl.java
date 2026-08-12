@@ -12,6 +12,7 @@ import com.nrec.service.app.mapper.TaskCategoryMapper;
 import com.nrec.service.app.mapper.TaskItemMapper;
 import com.nrec.service.app.model.TaskStatus;
 import com.nrec.service.app.model.dto.TaskDto;
+import com.nrec.service.app.model.dto.TaskStatisticsDto;
 import com.nrec.service.app.model.qo.TaskCreateQo;
 import com.nrec.service.app.model.qo.TaskPageQo;
 import com.nrec.service.app.model.qo.TaskStatusQo;
@@ -24,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -98,7 +101,14 @@ public class TaskServiceImpl implements ITaskService {
             }
         }
         item.setUpdatedAt(LocalDateTime.now());
-        taskItemMapper.updateById(item);
+        if (qo.getVersion() != null) {
+            item.setVersion(qo.getVersion());
+        }
+        int updated = taskItemMapper.updateById(item);
+        if (updated == 0) {
+            // 版本不匹配 / 行已被他人修改或删除：MyBatis-Plus 乐观锁拦截器会让 updateById 影响 0 行
+            throw new ServiceException(BizCode.CONFLICT, "任务已被他人修改，请刷新后重试");
+        }
         return detail(id);
     }
 
@@ -111,7 +121,13 @@ public class TaskServiceImpl implements ITaskService {
         TaskItem item = getOwned(id, userId);
         item.setStatus(qo.getStatus());
         item.setUpdatedAt(LocalDateTime.now());
-        taskItemMapper.updateById(item);
+        if (qo.getVersion() != null) {
+            item.setVersion(qo.getVersion());
+        }
+        int updated = taskItemMapper.updateById(item);
+        if (updated == 0) {
+            throw new ServiceException(BizCode.CONFLICT, "任务已被他人修改，请刷新后重试");
+        }
     }
 
     @Override
@@ -119,6 +135,41 @@ public class TaskServiceImpl implements ITaskService {
         String userId = currentUserId();
         getOwned(id, userId); // 校验归属，查不到直接抛「数据不存在」
         taskItemMapper.deleteById(id);
+    }
+
+    @Override
+    public List<TaskDto> listOverdue() {
+        String userId = currentUserId();
+        List<TaskItem> items = taskItemMapper.selectList(
+                new QueryWrapper<TaskItem>()
+                        .eq("user_id", userId)
+                        .in("status", TaskStatus.TODO, TaskStatus.IN_PROGRESS)
+                        .lt("due_date", LocalDateTime.now()));
+        return items.stream().map(item -> {
+            TaskDto dto = toDto(item);
+            fillCategoryName(dto, item.getCategoryId());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public TaskStatisticsDto statistics() {
+        String userId = currentUserId();
+        TaskStatisticsDto dto = new TaskStatisticsDto();
+        dto.setTotal(taskItemMapper.selectCount(
+                new QueryWrapper<TaskItem>().eq("user_id", userId)));
+        dto.setPending(taskItemMapper.selectCount(
+                new QueryWrapper<TaskItem>().eq("user_id", userId).eq("status", TaskStatus.TODO)));
+        dto.setInProgress(taskItemMapper.selectCount(
+                new QueryWrapper<TaskItem>().eq("user_id", userId).eq("status", TaskStatus.IN_PROGRESS)));
+        dto.setCompleted(taskItemMapper.selectCount(
+                new QueryWrapper<TaskItem>().eq("user_id", userId).eq("status", TaskStatus.DONE)));
+        dto.setOverdue(taskItemMapper.selectCount(
+                new QueryWrapper<TaskItem>()
+                        .eq("user_id", userId)
+                        .in("status", TaskStatus.TODO, TaskStatus.IN_PROGRESS)
+                        .lt("due_date", LocalDateTime.now())));
+        return dto;
     }
 
     // ===== 内部工具方法 =====

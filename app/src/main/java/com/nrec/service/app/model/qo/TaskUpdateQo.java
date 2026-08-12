@@ -33,4 +33,7 @@ public class TaskUpdateQo {
 
     @ApiModelProperty(value = "所属分类ID（可空）")
     private String categoryId;
+
+    @ApiModelProperty(value = "乐观锁版本号（由详情接口返回，更新时原样回传；不匹配则报冲突）")
+    private Long version;
 }

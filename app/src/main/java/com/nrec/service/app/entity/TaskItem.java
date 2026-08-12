@@ -2,7 +2,9 @@ package com.nrec.service.app.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -38,6 +40,14 @@ public class TaskItem implements Serializable {
 
     @TableField("category_id")
     private String categoryId;
+
+    @Version
+    @TableField("version")
+    private Long version;
+
+    @TableLogic(value = "0", delval = "1")
+    @TableField("deleted")
+    private Integer deleted;
 
     @TableField("created_at")
     private LocalDateTime createdAt;

@@ -1,0 +1,30 @@
+# ============================================================
+# 集成测试专用 profile（与 test 叠加，后者在前、本文件在后生效）。
+# 仅覆盖数据源：用 H2 内存库替代 MySQL，并初始化 schema-h2.sql，
+# 从而在不依赖本地 MySQL / 不 mock Mapper 的前提下真实验证
+# MyBatis-Plus 的乐观锁 / 逻辑删除拦截器。
+# ============================================================
+
+spring:
+  datasource:
+    # H2 内存库；MODE=MySQL 让建表语句兼容 MySQL 语法，DB_CLOSE_DELAY=-1 保证多连接间数据不丢
+    url: jdbc:h2:mem:taskapp;DB_CLOSE_DELAY=-1;MODE=MySQL;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+    # Boot 2.3：用该方式在启动时执行建表脚本（嵌入式库默认也会初始化，显式声明更稳）
+    schema: classpath:schema-h2.sql
+    initialization-mode: always
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+  global-config:
+    db-config:
+      # 主键 UUID（与 entity @TableId 一致）
+      id-type: assign_uuid
+      # 逻辑删除字段：与实体 @TableLogic 配合（value=未删, delval=已删）
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0

@@ -20,6 +20,7 @@
         FROM task_item ti
         LEFT JOIN task_category tc ON ti.category_id = tc.id
         WHERE ti.user_id = #{userId}
+        AND ti.deleted = 0
         <if test="q.status != null and q.status != ''">
             AND ti.status = #{q.status}
         </if>

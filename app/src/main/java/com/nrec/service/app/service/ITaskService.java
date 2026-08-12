@@ -2,6 +2,7 @@ package com.nrec.service.app.service;
 
 import com.nrec.base.common.model.TablePage;
 import com.nrec.service.app.model.dto.TaskDto;
+import com.nrec.service.app.model.dto.TaskStatisticsDto;
 import com.nrec.service.app.model.qo.TaskCreateQo;
 import com.nrec.service.app.model.qo.TaskPageQo;
 import com.nrec.service.app.model.qo.TaskStatusQo;
@@ -23,4 +24,8 @@ public interface ITaskService {
     void updateStatus(String id, TaskStatusQo qo);
 
     void delete(String id);
+
+    java.util.List<TaskDto> listOverdue();
+
+    TaskStatisticsDto statistics();
 }

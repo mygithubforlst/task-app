@@ -27,4 +27,7 @@ public final class BizCode {
 
     /** 任务状态非法 */
     public static final String INVALID_STATUS = "INVALID_STATUS";
+
+    /** 乐观锁冲突（数据已被他人修改） */
+    public static final String CONFLICT = "CONFLICT";
 }

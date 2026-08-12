@@ -2,6 +2,7 @@ package com.nrec.service.common.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,8 @@ public class DatasourceConfig {
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         interceptor.addInnerInterceptor(paginationInterceptor());
+        // 乐观锁拦截器：更新时自动追加 version 条件并自增，version 不匹配则影响 0 行（业务层按受影响行数为 0 判定冲突）
+        interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
         //interceptor.addInnerInterceptor(new PaginationInnerInterceptor()); 如果有多数据源可以不配具体类型 否则都建议配上具体的DbType
         return interceptor;
     }

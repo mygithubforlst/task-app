@@ -20,4 +20,7 @@ public class TaskStatusQo {
     @CheckWith(value = TaskStatusCheck.class, message = "任务状态必须为 0、1 或 2")
     @ApiModelProperty(value = "任务状态：0-待办 1-进行中 2-已完成", required = true)
     private String status;
+
+    @ApiModelProperty(value = "乐观锁版本号（由详情接口返回，更新时原样回传；不匹配则报冲突）")
+    private Long version;
 }
