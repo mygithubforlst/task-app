@@ -1,7 +1,6 @@
 # 个人任务清单系统（nrec-service-cli · app 模块）
 
-基于 `nrec-service-cli` 脚手架的 `app` 模块实现的个人任务清单后端 REST API。
-仅后端，无前端页面；通过 Swagger2 提供接口文档与联调界面。
+基于 `nrec-service-cli` 脚手架 `app` 模块实现的任务清单后端服务，没有前端页面，接口文档和联调都通过 Swagger2 完成。
 
 ---
 
@@ -9,7 +8,7 @@
 
 | 项 | 版本 / 说明 |
 |---|---|
-| JDK | 1.8（JDK8，不可使用 Java 9+ 语法） |
+| JDK | 1.8|
 | Spring Boot | 2.3.12.RELEASE |
 | MyBatis-Plus | 3.5.3.2 |
 | 安全 | spring-boot-starter-security + jjwt 0.11.5（HS256） |
@@ -48,8 +47,7 @@ com.nrec.service.app
 └── common           # ValidationUtils（OVal 触发）、BizCode（异常 code 常量）
 ```
 
-**严格三层**：Controller → Service → Mapper，业务逻辑只在 Service 层；
-Controller 不直连 Mapper，也不编写主要业务逻辑。
+**分层约束**：Controller 只做参数接收和结果包装，业务逻辑都放在 Service 里，Controller 不直接调 Mapper。
 
 ---
 
@@ -89,16 +87,15 @@ task_user(id, username[UK], password[BCrypt], email, enabled, created_at, update
    请求头 `Authorization: Bearer <token>`。
    `JwtAuthFilter`（在用户名密码过滤器之前）解析 Token，
    将 `userId/username` 写入 `SecurityContext` 与 `SecurityContextUtil` 静态上下文。
-4. **服务端强制归属**
-   所有 `/tasks`、`/categories`、`/users/me` 操作都从 `SecurityContextUtil` 取
-   `当前用户ID`，并以「资源ID + 当前用户ID」双约束查询，
-   查不到即抛「数据不存在」，用户 A 无法触达用户 B 的数据。
+4. **归属校验**
+   所有 `/tasks`、`/categories`、`/users/me` 操作都从 `SecurityContextUtil` 取当前用户 ID，
+   查询时同时带上「资源 ID + 当前用户 ID」两个条件，查不到就返回「数据不存在」，
+   用户 A 因此读不到也改不了用户 B 的数据。
 5. **失败处理**
    - 无 Token / Token 过期 / 篡改 → `RestAuthenticationEntryPoint` 返回 **401**。
    - 已登录但无权限 → `RestAccessDeniedHandler` 返回 **403**。
 
-> JWT 密钥为开发用固定密钥（位于 `application-test.yml` 的
-> `nrec.task.jwt.secret`，长度 ≥ 32 字节），生产环境应改为环境变量/配置中心注入。
+> JWT 密钥是写死在 `application-test.yml` 的 `nrec.task.jwt.secret` 里的开发密钥（长度 ≥ 32 字节），正式上线时可以改成从环境变量或配置中心注入。
 
 ---
 
@@ -147,9 +144,9 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:5506/task_app?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
-    password: ${TASK_DB_PASSWORD}   # 本地用环境变量注入，切勿落库明文
+    password: ${TASK_DB_PASSWORD}   # 密码从环境变量读，别写死在文件里
 ```
-> 本仓库 `password` 一律为 `${TASK_DB_PASSWORD}` 占位符，不含任何真实密码。
+> 仓库里 `password` 只用 `${TASK_DB_PASSWORD}` 占位。
 
 ### 3. 启动
 
@@ -159,7 +156,7 @@ spring:
 ```bash
 cd E:\Training\Training\nrec-service-cli
 mvn -Ptest -pl app -am clean package -DskipTests
-$env:TASK_DB_PASSWORD = "你的MySQL密码"     # PowerShell；CMD 用 set TASK_DB_PASSWORD=...
+$env:TASK_DB_PASSWORD = "自己实际的MySQL密码"     # PowerShell；CMD 用 set TASK_DB_PASSWORD=...
 java -jar app/target/app.jar
 ```
 
@@ -179,7 +176,7 @@ java -jar app/target/app.jar
 - Swagger UI：`http://localhost:8080/task-app/swagger-ui.html`
 - 文档 JSON：`http://localhost:8080/task-app/v2/api-docs`
 
-**联调顺序建议**：
+**联调顺序**：
 1. `POST /auth/register` 注册两个用户 →
 2. `POST /auth/login` 取 Token →
 3. 在 Swagger 右上角「Authorize」填入 `Bearer <token>` →
