@@ -145,7 +145,7 @@ source sql/data-mysql.sql;     -- 可选：测试数据（user_a / user_b，密�
 ```yaml
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/task_app?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:5506/task_app?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
     password: ${TASK_DB_PASSWORD}   # 本地用环境变量注入，切勿落库明文
 ```
@@ -153,22 +153,26 @@ spring:
 
 ### 3. 启动
 
-> ⚠️ 本项目父 POM（nrcloud-fat）在 `spring-boot-maven-plugin` 根级配了
-> `excludeGroupIds=org.springframework,org.springframework.security`，
-> 对 `spring-boot:run` 目标也生效，会导致运行时 `NoClassDefFoundError`。
-> **因此 `spring-boot:run` 不可用**，必须用 fat jar 方式启动。
+> ⚠️ `spring-boot:run` 不可用（父 POM 排除了 spring 依赖），必须用 fat jar 启动。
 
-**方式一：命令行（推荐）**
+**方式一：命令行**
 ```bash
-cd app
-mvn -Ptest package -DskipTests
-set TASK_DB_PASSWORD=&lt;你的本地MySQL密码&gt;        # 本地数据库 root 密码，仅环境变量注入
-java -jar target/app.jar
+cd E:\Training\Training\nrec-service-cli
+mvn -Ptest -pl app -am clean package -DskipTests
+$env:TASK_DB_PASSWORD = "你的MySQL密码"     # PowerShell；CMD 用 set TASK_DB_PASSWORD=...
+java -jar app/target/app.jar
 ```
 
 **方式二：IDEA**
-- 运行 `AppApplication`
-- VM options：`-Dspring.profiles.active=test -DTASK_DB_PASSWORD=&lt;你的本地MySQL密码&gt;`
+1. Maven 面板 → Profiles → ✅ 勾 `test`，❌ 取消 `pro`
+2. Build → Rebuild Project
+3. 编辑 `AppApplication` 运行配置，VM options 填：
+   ```
+   -Dspring.profiles.active=test -DTASK_DB_PASSWORD=你的MySQL密码
+   ```
+4. 运行
+
+> 必须切 `test` profile 构建，否则 `bootstrap-test.yml` 不进 `target/classes`，启动报 `localeResolver` 错误。
 
 ### 4. 接口文档 / 联调
 启动后访问：
